@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add a New Customer</title>
+</head>
+<body>
+    <h2>Add a New Customer</h2>
+    <form id="addCustomerForm">
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" required><br><br>
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" required><br><br>
+        <label for="street">Street:</label>
+        <input type="text" id="street" required><br><br>
+        <label for="address">Address:</label>
+        <input type="text" id="address" required><br><br>
+        <label for="city">City:</label>
+        <input type="text" id="city" required><br><br>
+        <label for="state">State:</label>
+        <input type="text" id="state" required><br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" required><br><br>
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" required><br><br>
+        <button type="submit">Create Customer</button>
+    </form>
+    <br>
+    <script>
+
+        function addCustomer() {
+            const access_token = sessionStorage.getItem("access_token");
+            if (!access_token) {
+                alert("You need to login first.");
+                window.location.href = "index.html"; 
+                return;
+            }
+
+            const first_name = document.getElementById("first_name").value;
+            const last_name = document.getElementById("last_name").value;
+            const street = document.getElementById("street").value;
+            const address = document.getElementById("address").value;
+            const city = document.getElementById("city").value;
+            const state = document.getElementById("state").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+
+            fetch("https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=create", {
+                method: "POST",
+                mode:"no-cors",
+                body: JSON.stringify({
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "street": street,
+                    "address": address,
+                    "city": city,
+                    "state": state,
+                    "email": email,
+                    "phone": phone
+                }),
+                headers: {
+                    "Authorization": `Bearer ${access_token}`,
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.status === 201) {
+                    alert("Customer successfully created.");
+                    window.location.href = "customer_list.html"; 
+                } else if (response.status === 400) {
+                    alert("First Name or Last Name is missing.");
+                } else {
+                    alert("An error occurred while creating the customer.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while creating the customer.");
+            });
+        }
+
+       
+        function goBack() {
+            window.location.href = "customer_list.html";
+        }
+
+        document.getElementById("addCustomerForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            addCustomer();
+        });
+    </script>
+</body>
+</html>

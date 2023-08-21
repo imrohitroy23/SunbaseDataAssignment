@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer List</title>
+</head>
+<body>
+    <h2>Customer List</h2>
+    <table id="customerTable" border="1">
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Street</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Action</th>
+        </tr>
+    </table>
+    <br>
+    <script>
+       
+        function getCustomerList() {
+            const access_token = sessionStorage.getItem("access_token");
+            if (!access_token) {
+                alert("You need to login first.");
+                window.location.href = "index.html"; 
+                return;
+            }
+
+            fetch("https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=get_customer_list", {
+                method: "GET",
+                mode:"no-cors",
+                headers: {
+                    "Authorization": `Bearer ${access_token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const customerTable = document.getElementById("customerTable");
+                data.forEach(customer => {
+                    const row = customerTable.insertRow();
+                    row.insertCell().innerText = customer.first_name;
+                    row.insertCell().innerText = customer.last_name;
+                    row.insertCell().innerText = customer.street;
+                    row.insertCell().innerText = customer.address;
+                    row.insertCell().innerText = customer.city;
+                    row.insertCell().innerText = customer.state;
+                    row.insertCell().innerText = customer.email;
+                    row.insertCell().innerText = customer.phone;
+                    const deleteButton = document.createElement("button");
+                    deleteButton.innerText = "Delete";
+                    deleteButton.onclick = function() {
+                        deleteCustomer(customer.uuid);
+                    };
+                    row.insertCell().appendChild(deleteButton);
+                    const updateButton = document.createElement("button");
+                    updateButton.innerText = "Update";
+                    updateButton.onclick = function() {
+                        updateCustomer(customer.uuid);
+                    };
+                    row.insertCell().appendChild(updateButton);
+                });
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while fetching the customer list.");
+            });
+        }
+
+        function deleteCustomer(uuid) {
+            const access_token = sessionStorage.getItem("access_token");
+            if (!access_token) {
+                alert("You need to login first.");
+                window.location.href = "index.html"; // Redirect to the Login Screen
+                return;
+            }
+
+            fetch("https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=delete&uuid=" + uuid, {
+                method: "POST",
+                mode:"no-cors",
+                headers: {
+                    "Authorization": `Bearer ${access_token}`
+                }
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    alert("Customer successfully deleted.");
+                    window.location.reload(); 
+                } else if (response.status === 400) {
+                    alert("UUID not found.");
+                } else {
+                    alert("An error occurred while deleting the customer.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while deleting the customer.");
+            });
+        }
+        function updateCustomer(uuid) {
+            
+            window.location.href = `update_customer.html?uuid=${uuid}`;
+        }
+   
+        document.addEventListener("DOMContentLoaded", function() {
+            getCustomerList();
+        });
+    </script>
+</body>
+</html>
